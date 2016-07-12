@@ -1093,10 +1093,10 @@ int64_t GetRunningFee(int64_t nFees){
         if (!MoneyRange(nCumulatedFee)){
         nCumulatedFee=0;
         }
-        LogPrintf("%d---------------------->blockFee:%d\n",pblockindexTmp->nHeight,(int)blockFee);
-        LogPrintf("---------------------->nCumulatedFee:%d\n",(int)nCumulatedFee);
-        LogPrintf("---------------------->count:%d\n",(int)feesCount);
-        LogPrintf("---------------------->avg:%d\n",(int64_t)((nCumulatedFee+nFees)/(feesCount+1)));
+       // LogPrintf("%d---------------------->blockFee:%d\n",pblockindexTmp->nHeight,(int)blockFee);
+       // LogPrintf("---------------------->nCumulatedFee:%d\n",(int)nCumulatedFee);
+       // LogPrintf("---------------------->count:%d\n",(int)feesCount);
+       // LogPrintf("---------------------->avg:%d\n",(int64_t)((nCumulatedFee+nFees)/(feesCount+1)));
         feesCount++;
         pblockindexTmp = pblockindexTmp->pprev;
     }
@@ -3008,13 +3008,13 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
         if (TestNet() && pfrom->nVersion < MIN_PEER_PROTO_VERSION)
          {
                      // disconnect from peers older than this proto version
-                     LogPrintf("partner %s using obsolete version %i; disconnecting\n", pfrom->addr.ToString(), pfrom->nVersion);
+                     LogPrintf("3011 partner %s using obsolete version %i; disconnecting\n", pfrom->addr.ToString(), pfrom->nVersion, MIN_PEER_PROTO_VERSION);
                      pfrom->fDisconnect = true;
                      return false;
          } else if (pfrom->nVersion < (MIN_PEER_PROTO_VERSION - 1))
         {
             // disconnect from peers older than this proto version
-            LogPrintf("partner %s using obsolete version %i; disconnecting\n", pfrom->addr.ToString(), pfrom->nVersion);
+            LogPrintf("3017 partner %s using obsolete version %i; disconnecting\n", pfrom->addr.ToString(), pfrom->nVersion, MIN_PEER_PROTO_VERSION );
             pfrom->fDisconnect = true;
             return false;
         }
