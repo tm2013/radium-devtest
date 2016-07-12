@@ -1040,8 +1040,7 @@ int64_t GetProofOfStakeReward(const CBlockIndex* pindexPrev, int64_t nCoinAge, i
     LogPrint("creation", "GetProofOfStakeReward(): create=%s nCoinAge=%d\n", FormatMoney(nSubsidy), nCoinAge);
 
 
-
-    if(pindexBest->nHeight+1 >= AVG_FEE_START_BLOCK && TestNet()){
+    if(pindexBest->nHeight+1 >= AVG_FEE_START_BLOCK){
         int64_t nRFee;
         nRFee=GetRunningFee(nFees);
         return nSubsidy + nRFee;
@@ -1090,19 +1089,21 @@ int64_t GetRunningFee(int64_t nFees){
                 }
                 mapFeeCache[pblockindexTmp->nHeight]=blockFee;
         }
-        nCumulatedFee+=blockFee;
+        nCumulatedFee+=blockFee;       
         if (!MoneyRange(nCumulatedFee)){
         nCumulatedFee=0;
         }
-        if(blockFee>0)feesCount++;
+        //LogPrintf("%d---------------------->blockFee:%d\n",pblockindexTmp->nHeight,(int)blockFee);
+        //LogPrintf("---------------------->nCumulatedFee:%d\n",(int)nCumulatedFee);
+        //LogPrintf("---------------------->count:%d\n",(int)feesCount);
+        //LogPrintf("---------------------->avg:%d\n",(int64_t)((nCumulatedFee+nFees)/(feesCount+1)));
+        feesCount++;
         pblockindexTmp = pblockindexTmp->pprev;
     }
-    if(nFees>0){
-        nRFee=(int64_t)((nCumulatedFee+nFees)/(feesCount+1));
-    }else{
-        nRFee=(int64_t)((nCumulatedFee)/(feesCount));
-    }
+    nRFee=(int64_t)((nCumulatedFee+nFees)/(feesCount+1));
     if (!MoneyRange(nRFee))nRFee=0;
+    //LogPrintf("---------------------->Fee:%d\n",(int)nFees);
+    //LogPrintf("---------------------->RFee:%d\n",(int)nRFee);
     if(mapFeeCache.size()>50000)mapFeeCache.clear(); //clear cache if it gets too big to avoid memory bloating
     return nRFee;
 }
@@ -2149,6 +2150,9 @@ bool CBlock::AcceptBlock()
     CBlockIndex* pindexPrev = (*mi).second;
     int nHeight = pindexPrev->nHeight+1;
 
+    if (nHeight>=AVG_FEE_START_BLOCK && nVersion < 8)
+        return DoS(100, error("AcceptBlock() : reject too old nVersion (Avg fee) = %d", nVersion));
+
     if (IsProtocolV2(nHeight) && nVersion < 7)
         return DoS(100, error("AcceptBlock() : reject too old nVersion = %d", nVersion));
     //else if (!IsProtocolV2(nHeight) && nVersion > 6)
@@ -2999,21 +3003,13 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
         CAddress addrFrom;
         uint64_t nNonce = 1;
         vRecv >> pfrom->nVersion >> pfrom->nServices >> nTime >> addrMe;
-
-        if (TestNet() && pfrom->nVersion < MIN_PEER_PROTO_VERSION)
-        {
-            // disconnect from peers older than this proto version
-            LogPrintf("partner %s using obsolete version %i; disconnecting\n", pfrom->addr.ToString(), pfrom->nVersion);
-            pfrom->fDisconnect = true;
-            return false;
-        } else if (pfrom->nVersion < (MIN_PEER_PROTO_VERSION - 1))
+        if (pfrom->nVersion < MIN_PEER_PROTO_VERSION)
         {
             // disconnect from peers older than this proto version
             LogPrintf("partner %s using obsolete version %i; disconnecting\n", pfrom->addr.ToString(), pfrom->nVersion);
             pfrom->fDisconnect = true;
             return false;
         }
-
 
         if (pfrom->nVersion == 10300)
             pfrom->nVersion = 300;
