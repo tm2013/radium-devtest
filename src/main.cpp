@@ -1032,7 +1032,19 @@ int64_t GetProofOfStakeReward(const CBlockIndex* pindexPrev, int64_t nCoinAge, i
     }
     else if(pindexBest->nHeight+1 >= 348080)
     {
-		nSubsidy = 1 * COIN;  // 8th and final reward drop until further notice.
+		nSubsidy = 1 * COIN;  // 8th reward drop
+    }
+    else if(pindexBest->nHeight+1 >= 874360)
+    {
+                nSubsidy = 0.75 * COIN; // First reward drop 6 months from the average fee fork.
+    }
+    else if(pindexBest->nHeight+1 >= 1133560)
+    {
+                nSubsidy = 0.5 * COIN; // Second reward drop 12 months from the average fee fork.
+    }
+    else if(pindexBest->nHeight+1 >= 1392760)
+    {
+                nSubsidy = 0.25 * COIN; // Third and final reward drop 18 months from the average fee fork.
     }
 	
 	
@@ -1040,11 +1052,19 @@ int64_t GetProofOfStakeReward(const CBlockIndex* pindexPrev, int64_t nCoinAge, i
     LogPrint("creation", "GetProofOfStakeReward(): create=%s nCoinAge=%d\n", FormatMoney(nSubsidy), nCoinAge);
 
 
-    if(TestNet() && pindexBest->nHeight+1 >= AVG_FEE_START_BLOCK){
+    if(TestNet() && pindexBest->nHeight+1 >= AVG_FEE_START_BLOCK_TESTNET)
+    {
         int64_t nRFee;
         nRFee=GetRunningFee(nFees);
         return nSubsidy + nRFee;
-    }else{
+    }
+    else if(!TestNet() && pindexBest->nHeight+1 >= AVG_FEE_START_BLOCK)
+    {
+        int64_t nRFee;
+        nRFee=GetRunningFee(nFees);
+        return nSubsidy + nRFee;
+    else
+    {
         return nSubsidy + nFees;
     }
 
@@ -2150,8 +2170,13 @@ bool CBlock::AcceptBlock()
     CBlockIndex* pindexPrev = (*mi).second;
     int nHeight = pindexPrev->nHeight+1;
 
-   // if (nHeight>=AVG_FEE_START_BLOCK && nVersion < 8)
-       // return DoS(100, error("AcceptBlock() : reject too old nVersion (Avg fee) = %d", nVersion));
+    // DoS protection for the spread fees fork
+    // Currently commented out to avoid unexpected results
+    //if (TestNet() && nHeight+1 >= AVG_FEE_START_BLOCK_TESTNET && nVersion < 8)
+    //    return DoS(100, error("AcceptBlock() : reject too old nVersion (Avg fee) = %d", nVersion));
+    //
+    //if (!TestNet() && nHeight+1 >= AVG_FEE_START_BLOCK && nVersion < 8)
+    //    return DoS(100, error("AcceptBlock() : reject too old nVersion (Avg fee) = %d", nVersion));
 
     if (IsProtocolV2(nHeight) && nVersion < 7)
         return DoS(100, error("AcceptBlock() : reject too old nVersion = %d", nVersion));
