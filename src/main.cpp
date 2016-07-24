@@ -3030,14 +3030,23 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
         uint64_t nNonce = 1;
         vRecv >> pfrom->nVersion >> pfrom->nServices >> nTime >> addrMe;
 
+        if (TestNet() && pindexBest->nHeight+1 >= AVG_FEE_START_BLOCK_TESTNET)
+        {
+            MIN_PEER_PROTO_VERSION += 1;
+        }
+        else if (!TestNet() && pindexBest->nHeight+1 >= AVG_FEE_START_BLOCK)
+        {
+            MIN_PEER_PROTO_VERSION += 1;
+        }
 
         if (TestNet() && pfrom->nVersion < MIN_PEER_PROTO_VERSION)
-         {
+        {
                      // disconnect from peers older than this proto version
                      LogPrintf("3011 partner %s using obsolete version %i; disconnecting\n", pfrom->addr.ToString(), pfrom->nVersion, MIN_PEER_PROTO_VERSION);
                      pfrom->fDisconnect = true;
                      return false;
-         } else if (pfrom->nVersion < (MIN_PEER_PROTO_VERSION - 1))
+        } 
+        else if (pfrom->nVersion < (MIN_PEER_PROTO_VERSION - 1))
         {
             // disconnect from peers older than this proto version
             LogPrintf("3017 partner %s using obsolete version %i; disconnecting\n", pfrom->addr.ToString(), pfrom->nVersion, MIN_PEER_PROTO_VERSION );
