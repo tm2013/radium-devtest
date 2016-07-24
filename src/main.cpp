@@ -3083,50 +3083,6 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
             }
         }
 
-        // If running on the forked testnet, disconnect from testnet peers older than the fork.
-        if (TestNet() && pindexBest->nHeight+1 >= AVG_FEE_START_BLOCK_TESTNET)
-        {
-            if (pfrom->nVersion < PROTOCOL_VERSION)
-            {
-                // Disconnect from testnet peers older than this protocol version
-                LogPrintf("3011 partner %s using obsolete version %i; disconnecting\n", pfrom->addr.ToString(), pfrom->nVersion, MIN_PEER_PROTO_VERSION);
-                pfrom->fDisconnect = true;
-                return false;
-            }
-        }
-        // If running on the forked mainnet, disconnect from mainnet peers older than the fork.
-        else if (!TestNet() && pindexBest->nHeight+1 >= AVG_FEE_START_BLOCK)
-        {
-            if (pfrom->nVersion < PROTOCOL_VERSION)
-            {
-                // Disconnect from mainnet peers older than this protocol version
-                LogPrintf("3017 partner %s using obsolete version %i; disconnecting\n", pfrom->addr.ToString(), pfrom->nVersion, MIN_PEER_PROTO_VERSION);
-                pfrom->fDisconnect = true;
-                return false;
-            }
-        }
-        // If running on the non-forked mainnet, disconnect according to the normal protocol.
-        else
-        {
-            if (pfrom->nVersion < MIN_PEER_PROTO_VERSION)
-            {
-                // Disconnect from testnet peers older than this protocol version
-                if (TestNet())
-                {
-                    LogPrintf("3011 partner %s using obsolete version %i; disconnecting\n", pfrom->addr.ToString(), pfrom->nVersion, MIN_PEER_PROTO_VERSION);
-                    pfrom->fDisconnect = true;
-                    return false;
-                }
-                // Disconnect from mainnet peers older than this protocol version
-                else
-                {
-                    LogPrintf("3017 partner %s using obsolete version %i; disconnecting\n", pfrom->addr.ToString(), pfrom->nVersion, MIN_PEER_PROTO_VERSION);
-                    pfrom->fDisconnect = true;
-                    return false;
-                }
-            }
-        }
-
         if (pfrom->nVersion == 10300)
             pfrom->nVersion = 300;
         if (!vRecv.empty())
