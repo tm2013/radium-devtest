@@ -1063,6 +1063,7 @@ int64_t GetProofOfStakeReward(const CBlockIndex* pindexPrev, int64_t nCoinAge, i
         int64_t nRFee;
         nRFee=GetRunningFee(nFees);
         return nSubsidy + nRFee;
+    }
     else
     {
         return nSubsidy + nFees;
