@@ -1030,15 +1030,15 @@ int64_t GetProofOfStakeReward(const CBlockIndex* pindexPrev, int64_t nCoinAge, i
     {
 		nSubsidy = 1.5 * COIN;  // 7th reward drop
     }
-    else if(pindexBest->nHeight+1 >= 348080)
+    else if(pindexBest->nHeight+1 >= 348080 && pindexBest->nHeight+1 <= 874359)
     {
 		nSubsidy = 1 * COIN;  // 8th reward drop
     }
-    else if(pindexBest->nHeight+1 >= 874360)
+    else if(pindexBest->nHeight+1 >= 874360 && pindexBest->nHeight+1 <= 1133559)
     {
                 nSubsidy = 0.75 * COIN; // First reward drop 6 months from the average fee fork.
     }
-    else if(pindexBest->nHeight+1 >= 1133560)
+    else if(pindexBest->nHeight+1 >= 1133560 && pindexBest->nHeight+1 <= 1392759)
     {
                 nSubsidy = 0.5 * COIN; // Second reward drop 12 months from the average fee fork.
     }
